@@ -71,6 +71,39 @@ namespace PlanetGorgon_Server
                 using (Message playerMessage = Message.Create(Tags.SpawnPlayerTag, playerWriter))
                     e.Client.SendMessage(playerMessage, SendMode.Reliable);
             }
+
+            e.Client.MessageReceived += MovementMessageReceived;
+        }
+
+        void MovementMessageReceived(object sender, MessageReceivedEventArgs e)
+        {
+            using (Message message = e.GetMessage() as Message)
+            {
+                if (message.Tag == Tags.MovePlayerTag)
+                {
+                    using (DarkRiftReader reader = message.GetReader())
+                    {
+                        float newX = reader.ReadSingle();
+                        float newY = reader.ReadSingle();
+
+                        Player player = players[e.Client];
+
+                        player.X = newX;
+                        player.Y = newY;
+
+                        using (DarkRiftWriter writer = DarkRiftWriter.Create())
+                        {
+                            writer.Write(player.ID);
+                            writer.Write(player.X);
+                            writer.Write(player.Y);
+                            message.Serialize(writer);
+                        }
+
+                        foreach (IClient c in ClientManager.GetAllClients().Where(x => x != e.Client))
+                            c.SendMessage(message, e.SendMode);
+                    }
+                }
+            }
         }
     }
 
