@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PlanetGorgon_Server
 {
-    public class Class1
+    public class AgarPlugin
     {
     }
 }
