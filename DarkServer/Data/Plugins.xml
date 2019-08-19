@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<plugins nextID="9">
+<plugins nextID="12">
   <plugin id="0" name="HelpCommand" version="1.0.0" />
   <plugin id="1" name="PluginController" version="1.0.0" />
   <plugin id="2" name="Sniffer" version="1.0.0" />
@@ -9,4 +9,7 @@
   <plugin id="6" name="DebugCommand" version="1.0.0" />
   <plugin id="7" name="ClientCommand" version="1.0.0" />
   <plugin id="8" name="AgarPlayerManager" version="1.0.0" />
+  <plugin id="9" name="BlockDemoPlayerManager" version="1.0.0" />
+  <plugin id="10" name="BlockDemoWorldManager" version="1.0.0" />
+  <plugin id="11" name="PlayerManager" version="1.0.0" />
 </plugins>
