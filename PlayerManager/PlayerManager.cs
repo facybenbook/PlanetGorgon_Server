@@ -16,7 +16,7 @@ namespace PlanetGorgon_Server
         public PlayerManager(PluginLoadData pluginLoadData) : base(pluginLoadData)
         {
             ClientManager.ClientConnected += ClientConnected;
-            ClientManager.ClientDisconnected += ClientManager_ClientDisconnected;
+            ClientManager.ClientDisconnected += ClientDisconnected;
         }
 
         private void ClientConnected(object sender, ClientConnectedEventArgs e)
@@ -60,9 +60,26 @@ namespace PlanetGorgon_Server
 
             //Subscribe to when this client sends messages
             e.Client.MessageReceived += MovementMessageReceived;
+            e.Client.MessageReceived += AnimationStateMessageReceived;
         }
 
-        void MovementMessageReceived(object sender, MessageReceivedEventArgs e)
+        private void ClientDisconnected(object sender, ClientDisconnectedEventArgs e)
+        {
+            players.Remove(e.Client);
+
+            using (DarkRiftWriter writer = DarkRiftWriter.Create())
+            {
+                writer.Write(e.Client.ID);
+
+                using (Message message = Message.Create(Tags.DespawnPlayerTag, writer))
+                {
+                    foreach (IClient client in ClientManager.GetAllClients())
+                        client.SendMessage(message, SendMode.Reliable);
+                }
+            }
+        }
+
+        private void MovementMessageReceived(object sender, MessageReceivedEventArgs e)
         {
             using (Message message = e.GetMessage() as Message)
             {
@@ -92,7 +109,40 @@ namespace PlanetGorgon_Server
                                 message.Serialize(player);
                             }
 
-                            //Console.WriteLine("Reading Message" + Encoding.Default.GetString(message.GetReader().ReadBytes()));
+                            //Send to everyone else
+                            foreach (IClient sendTo in ClientManager.GetAllClients().Except(new IClient[] { e.Client }))
+                                sendTo.SendMessage(message, SendMode.Reliable);
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        //Console.WriteLine("An error was logged when the movement message was received: " + ex.Message);
+                        //Console.WriteLine(ex.InnerException);
+                        //Console.WriteLine(ex.Data);
+                        //Console.WriteLine(ex.StackTrace);
+                    }
+                }
+            }
+        }
+
+        private void AnimationStateMessageReceived(object sender, MessageReceivedEventArgs e)
+        {
+            using (Message message = e.GetMessage() as Message)
+            {
+                if (message.Tag == Tags.AnimationPlayerTag)
+                {
+                    // Read Player Coordinates From The Message
+                    try
+                    {
+                        using (DarkRiftReader reader = message.GetReader())
+                        {
+                            // Get Player ID
+                            PlayerAnimationState animstate = new PlayerAnimationState();
+                            animstate.Speed = reader.ReadUInt16();
+                            animstate.ID = e.Client.ID;
+
+                            // Serialize Message
+                            message.Serialize(animstate);
 
                             //Send to everyone else
                             foreach (IClient sendTo in ClientManager.GetAllClients().Except(new IClient[] { e.Client }))
@@ -101,27 +151,11 @@ namespace PlanetGorgon_Server
                     }
                     catch (System.Exception ex)
                     {
-                        Console.WriteLine("An error was logged when the packet was received: " + ex.Message);
+                        Console.WriteLine("An error was logged when the animation state message was received: " + ex.Message);
                         Console.WriteLine(ex.InnerException);
                         Console.WriteLine(ex.Data);
                         Console.WriteLine(ex.StackTrace);
                     }
-                }
-            }
-        }
-
-        private void ClientManager_ClientDisconnected(object sender, ClientDisconnectedEventArgs e)
-        {
-            players.Remove(e.Client);
-
-            using (DarkRiftWriter writer = DarkRiftWriter.Create())
-            {
-                writer.Write(e.Client.ID);
-
-                using (Message message = Message.Create(Tags.DespawnSplayer, writer))
-                {
-                    foreach (IClient client in ClientManager.GetAllClients())
-                        client.SendMessage(message, SendMode.Reliable);
                 }
             }
         }

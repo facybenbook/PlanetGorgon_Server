@@ -35,6 +35,35 @@ namespace PlanetGorgon_Server
         }
     }
 
+    class PlayerAnimationState : IDarkRiftSerializable
+    {
+        public float Speed { get; set; }
+        public ushort ID { get; set; }
+
+        public PlayerAnimationState()
+        {
+
+        }
+
+        public PlayerAnimationState(float Speed, ushort ID)
+        {
+            this.Speed = Speed;
+            this.ID = ID;
+        }
+
+        public void Deserialize(DeserializeEvent e)
+        {
+            this.Speed = e.Reader.ReadUInt16();
+            this.ID = e.Reader.ReadUInt16();
+        }
+
+        public void Serialize(SerializeEvent e)
+        {
+            e.Writer.Write(Speed);
+            e.Writer.Write(ID);
+        }
+    }
+
     class Vec3 : IDarkRiftSerializable
     {
         public float X { get; set; }
@@ -67,4 +96,5 @@ namespace PlanetGorgon_Server
             e.Writer.Write(Z);
         }
     }
+
 }
