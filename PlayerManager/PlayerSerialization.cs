@@ -37,7 +37,7 @@ namespace PlanetGorgon_Server
 
     class PlayerAnimationState : IDarkRiftSerializable
     {
-        public float Speed { get; set; }
+        public int Speed { get; set; }
         public ushort ID { get; set; }
 
         public PlayerAnimationState()
@@ -45,7 +45,7 @@ namespace PlanetGorgon_Server
 
         }
 
-        public PlayerAnimationState(float Speed, ushort ID)
+        public PlayerAnimationState(int Speed, ushort ID)
         {
             this.Speed = Speed;
             this.ID = ID;
@@ -53,7 +53,7 @@ namespace PlanetGorgon_Server
 
         public void Deserialize(DeserializeEvent e)
         {
-            this.Speed = e.Reader.ReadUInt16();
+            this.Speed = e.Reader.ReadInt32();
             this.ID = e.Reader.ReadUInt16();
         }
 
