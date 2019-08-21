@@ -138,7 +138,9 @@ namespace PlanetGorgon_Server
                         {
                             // Get Player ID
                             PlayerAnimationState animstate = new PlayerAnimationState();
-                            animstate.Speed = reader.ReadUInt16();
+                            animstate.Speed = reader.ReadInt32();
+                            animstate.Jump = reader.ReadByte();
+                            animstate.Grounded = reader.ReadByte();
                             animstate.ID = e.Client.ID;
 
                             // Serialize Message
